@@ -1,1 +1,5 @@
-bash tests/must_fail.sh
+# HUELLA-PYTHON-HUECO-EVAL-20261020
+# Control del HUECO de la plantilla Python (v4): declara codigo en linea que
+# no mide nada. Si el run sale VERDE, la plantilla Python firma un certificado
+# sin medir: el mismo agujero que la v4 de Node acaba de cerrar, 14 repos mas ancho.
+python -c 'pass'
