@@ -1,0 +1,1 @@
+bash tests/must_fail.sh
