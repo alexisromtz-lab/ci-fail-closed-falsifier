@@ -1,0 +1,1 @@
+{"name":"falsifier-node-v2-sin-tests","version":"1.0.0","private":true,"scripts":{"test":"node --test"}}
