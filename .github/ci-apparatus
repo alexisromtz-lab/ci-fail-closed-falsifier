@@ -1,1 +1,1 @@
-bash tests/must_fail.sh
+python .github/verify_manifest.py
