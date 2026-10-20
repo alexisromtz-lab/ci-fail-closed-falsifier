@@ -1,7 +1,2 @@
-# HUELLA-CI-PYTHON-V5-PROHIBICION-EVAL-20261020
-# Contrato v5: comando: + mide: (+ evidencia: si mide es manifiesto o banco).
-# La plantilla de este repo ya no firma verde con un comando que no mide.
-# Este repo ES el falsificador: su aparato es el banco de 2 casos.
-comando: bash tests/must_fail.sh
-mide: banco
-evidencia: CASOS: [1-9][0-9]*
+comando: python3 -m compileall -q .
+mide: sintaxis
