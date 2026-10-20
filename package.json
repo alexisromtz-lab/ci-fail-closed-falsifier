@@ -1,0 +1,1 @@
+{"name":"falsifier-node-v3-fantasma","version":"1.0.0","private":true,"scripts":{"test":"node -e \"console.log('Tests:       0 passed')\""}}

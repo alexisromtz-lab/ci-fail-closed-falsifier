@@ -1,46 +1,60 @@
-# HUELLA-CI-TEMPLATE-20261020
-# HUELLA-CI-TEMPLATE-FIX-20261020
-# HUELLA-CI-TEMPLATE-APPARATUS-20261020
-# HUELLA-CI-TEMPLATE-ADOPTABLE-V4-20261020
+# HUELLA-CI-TEMPLATE-NODE-20261020
+# HUELLA-CI-NODE-V2-VACUIDAD-20261020
+# HUELLA-CI-NODE-V3-EJECUCION-20261020
 #
-# Plantilla de CI fail-closed para los repositorios que hoy no miden nada.
+# Variante Node de la plantilla fail-closed (`ci_template.yml`) para los repos
+# cuyo aparato no es Python: TypeScript/Next y bóvedas de documentación con
+# scripts node.
 #
 # INERTE EN SU REPO DE ORIGEN POR DISEÑO: el job se declara *skipped* aquí
 # (skipped = «no medí», nunca un verde) y solo mide donde se adopta.
 #
-# ADOPTAR: copiar este archivo a <repo>/.github/workflows/ci.yml .
-#   · repo con tests pytest  -> con eso basta (se detectan test_*.py / *_test.py).
-#   · repo cuyo aparato NO es pytest (banco .sh, make, script propio) -> declarar
-#     el comando en <repo>/.github/ci-apparatus (una línea).
-#   Si no hay ni lo uno ni lo otro, el job FALLA: un repo sin aparato no es verde.
+# ADOPTAR: copiar este archivo a <repo>/.github/workflows/ci.yml y declarar el
+# comando en <repo>/.github/ci-apparatus (una línea).
+# Sin declaración NO se inventa un `npm test`: si `package.json` no trae script
+# `test`, el job FALLA (NO_APPARATUS_DECLARED). Un repo Node sin aparato
+# declarado no es verde.
 #
-# FALSIFICADOR (medido, no supuesto) en alexisromtz-lab/ci-fail-closed-falsifier,
-# PÚBLICO desde 2026-10-20T22:16:30Z: la cita es auditable sin token (API anónima
-# responde 200). Una rama por control, cada una con su corrida completada:
-#   sin-aparato     árbol sin tests ni declaración -> rojo  NO_APPARATUS_DECLARED
-#   con-test        tests pytest que pasan         -> verde
-#   fail-test       tests pytest que fallan        -> rojo
-#   main            aparato declarado que pasa     -> verde
-#   app-shell-fail  aparato declarado que falla    -> rojo
+# FALSIFICADOR medido en los dos adoptantes (2026-10-20):
+#   meta-webhook  `npx tsc --noEmit`              error de tipo inyectado -> rc 2 (rojo)
+#   legos-boveda  `node .github/verify_index.mjs` documento sin fila     -> rc 1 (rojo)
 #
-# CORRECCIÓN 1: el guard era `if: hashFiles(...)` a nivel de job; GitHub rechazó
-# el workflow entero (0 jobs, «workflow file issue»). `hashFiles` no existe en el
-# contexto del `if` de job (github, needs, vars, inputs). Corregido a
-# `github.repository`.
-# CORRECCIÓN 2: la sonda solo conocía pytest y publicó `NO_TESTS_FOUND` en un repo
-# cuyo aparato es un banco bash (git-preflight-gate, tests/must_fail.sh): certificó
-# la ausencia de una forma y no de las otras. Ahora el aparato se declara o se
-# detecta; el rojo solo cae cuando NO HAY NADA que medir.
-# CORRECCIÓN 3 (v4): se rechazó la rama «verde si es un repo de documentación
-# declarado». Un verde sin medición no es un repo sano: es la tautología F-D1 con
-# check verde. El repo sin aparato sale ROJO (NO_APPARATUS_DECLARED) hasta que
-# declare un comando que mida algo; el silencio se declara skipped, nunca verde.
-# CORRECCIÓN 4 (v4): `pip install` ya no asume manifiesto — 0 de 15 repos públicos
-# tienen requirements.txt (medido 2026-10-20T22:05Z). La ausencia de manifiesto es
-# una rama declarada (SIN_MANIFIESTO), no un fallo tragado: si el manifiesto existe
-# y la instalación falla, es rojo.
+# FALSIFICADOR PERMANENTE (v2) en alexisromtz-lab/ci-fail-closed-falsifier:
+# una rama por control, todas sobre este mismo blob (ver ACTA_CI_FALSADOR_NODE_20261020.md).
+#
+# CORRECCIÓN 5 (v2): `npm test` con `"test": "echo ok"` devolvía rc 0 y firmaba un
+# verde sin medir nada — la tautología F-D1 en Node. Ahora, cuando el aparato es
+# DETECTADO (script `test` de package.json), se exigen dos cosas: que el script no
+# sea un no-op literal (`echo`/`true`/`:`/`exit`/`--passWithNoTests`) y que exista
+# al menos un archivo de test del repo (node_modules y .git excluidos).
+#   · El aparato DECLARADO en `.github/ci-apparatus` no pasa por la sonda de
+#     archivos: `npx tsc --noEmit` y `node .github/verify_index.mjs` miden sin
+#     tener un solo `*.test.ts` (medido 2026-10-20T22:45Z: los dos adoptantes no
+#     tienen ninguno). Una guarda de existencia aplicada a todo habría puesto en
+#     rojo a los dos repos con aparato real — el sensor ajeno, invertido. Al
+#     declarado solo se le exige que no sea un no-op literal.
+#   · LÍMITE DECLARADO: la sonda mide **presencia de archivos**, no ejecución. Un
+#     script `test` que ignore sus propios `*.test.ts` seguiría verde: es el mismo
+#     Nivel 3 que este corpus audita en PyTorch. Por eso el repo cuyo aparato
+#     corre de verdad debe DECLARARLO: la declaración es la firma de quien mide.
+#
+# CORRECCIÓN 6 (v3): `VACUIDAD_OK` probaba PRESENCIA de archivos, no EJECUCIÓN.
+# Un `"test": "node -e \"process.exit(0)\""` con un `*.test.ts` al lado pasaba
+# verde sin correr nada. Ahora el camino DETECTADO captura la salida completa del
+# runner (`tee`, rc por `PIPESTATUS`) y exige que **el runner reporte ≥1 test
+# ejecutado**, leyendo los formatos de node --test (`# pass N`, TAP `ok N`),
+# jest (`Tests: N passed`), vitest (`Tests N passed`), mocha (`N passing`) y bun
+# (`N tests passed`). Un `0` explícito de cualquiera de esos formatos es rojo
+# aunque otra línea parezca positiva.
+#   · El aparato DECLARADO queda exento (`EJECUCION_NA`): `tsc --noEmit` y un
+#     verificador de índice no imprimen conteos, y exigírselos sería volver al
+#     sensor ajeno de la CORRECCIÓN 5, un piso más arriba.
+#   · LÍMITE DECLARADO: se mide **lo que el runner narra**, no lo que ejecutó. Un
+#     test que imprima «1 passing» sin correr nada engaña a esta guarda. Es una
+#     medida de segundo orden: mejor que contar archivos, peor que instrumentar
+#     el runner. Se declara para que nadie la lea como prueba de cobertura.
 
-name: ci-fail-closed
+name: ci-fail-closed-node
 
 on:
   push:
@@ -50,7 +64,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-node-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -59,9 +73,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          python-version: '3.12'
+          node-version: '20'
 
       - name: Resolver el aparato (declarado gana a detectado)
         run: |
@@ -74,44 +88,137 @@ jobs:
             fi
             echo "APPARATUS_DECLARED: $cmd"
             printf 'APPARATUS=%s\n' "$cmd" >> "$GITHUB_ENV"
-          elif [ -n "$(find . \( -name 'test_*.py' -o -name '*_test.py' \) \
-                        -not -path './.git/*' -not -path '*/node_modules/*' \
-                        -not -path './.venv/*' -print -quit)" ]; then
-            echo "APPARATUS_DETECTED: pytest"
-            echo "APPARATUS=pytest" >> "$GITHUB_ENV"
+          elif [ -f package.json ] && node -e "process.exit(require('./package.json').scripts && require('./package.json').scripts.test ? 0 : 1)"; then
+            script=$(node -e "process.stdout.write(require('./package.json').scripts.test)")
+            echo "APPARATUS_DETECTED: npm test"
+            echo "APPARATUS=npm test" >> "$GITHUB_ENV"
+            {
+              echo 'APPARATUS_SCRIPT<<__CI_EOF__'
+              echo "$script"
+              echo '__CI_EOF__'
+            } >> "$GITHUB_ENV"
           else
-            echo "NO_APPARATUS_DECLARED: no .github/ci-apparatus and no test_*.py / *_test.py — failing closed."
+            echo "NO_APPARATUS_DECLARED: no .github/ci-apparatus y package.json sin script test — failing closed."
             exit 1
+          fi
+
+      - name: Guarda de vacuidad (un aparato que no mide no es verde)
+        run: |
+          set -euo pipefail
+          vacuo() {
+            case "$1" in
+              echo*|true|:|exit*|printf*|"")
+                echo "APPARATUS_VACUO: '$1' no mide nada — failing closed."
+                exit 1 ;;
+            esac
+            if printf '%s' "$1" | grep -q -- '--passWithNoTests'; then
+              echo "APPARATUS_VACUO: '--passWithNoTests' declara que pasar sin tests es verde — failing closed."
+              exit 1
+            fi
+          }
+          if [ "$APPARATUS" = "npm test" ]; then
+            : "${APPARATUS_SCRIPT:?APPARATUS_SCRIPT no resuelto}"
+            vacuo "$APPARATUS_SCRIPT"
+            found=$(find . \( -name .git -o -name node_modules \) -prune -o -type f \
+              \( -name '*.test.js' -o -name '*.test.mjs' -o -name '*.test.cjs' \
+                 -o -name '*.test.ts' -o -name '*.test.tsx' \
+                 -o -name '*.spec.js' -o -name '*.spec.mjs' -o -name '*.spec.cjs' \
+                 -o -name '*.spec.ts' -o -name '*.spec.tsx' \
+                 -o -name 'test.js' -o -name 'test.mjs' \
+                 -o \( -path './test/*' -name '*.js' \) -o \( -path './tests/*' -name '*.js' \) \
+                 -o \( -path './test/*' -name '*.ts' \) -o \( -path './tests/*' -name '*.ts' \) \
+                 -o \( -path '*/__tests__/*' -name '*.js' \) \
+                 -o \( -path '*/__tests__/*' -name '*.ts' \) \) -print -quit)
+            if [ -z "$found" ]; then
+              echo "NO_TESTS_FOUND: '$APPARATUS_SCRIPT' pero el repo no tiene archivos de test (node_modules y .git excluidos) — failing closed."
+              exit 1
+            fi
+            echo "VACUIDAD_OK: script '$APPARATUS_SCRIPT' + archivo de test '$found'."
+          else
+            vacuo "$APPARATUS"
+            echo "VACUIDAD_NA: aparato declarado; su rc es la medida."
           fi
 
       - name: Instalar dependencias (falla cerrado)
         run: |
           set -euo pipefail
-          python -m pip install --upgrade pip > /dev/null
-          python -m pip install pytest
-          if [ -f requirements.txt ]; then
-            python -m pip install -r requirements.txt
-          elif [ -f pyproject.toml ]; then
-            python -m pip install -e .
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          elif [ -f package.json ]; then
+            echo "SIN_LOCKFILE: npm install (sin árbol reproducible)"
+            npm install --no-audit --no-fund
           else
-            echo "SIN_MANIFIESTO: no requirements.txt ni pyproject.toml — pytest pelado."
+            echo "SIN_MANIFIESTO: no package.json — el aparato debe ser node puro."
           fi
 
-      - name: Correr el aparato
+      - name: Correr el aparato (v3 — rc y conteo de tests ejecutados)
         run: |
           set -euo pipefail
+          echo "RUN_APPARATUS: $APPARATUS"
+          log=$(mktemp)
           set +e
-          if [ "$APPARATUS" = "pytest" ]; then
-            python -m pytest -q
-          else
-            echo "RUN_APPARATUS: $APPARATUS"
-            bash -c "$APPARATUS"
-          fi
-          rc=$?
+          bash -c "$APPARATUS" 2>&1 | tee "$log"
+          rc=${PIPESTATUS[0]}
           set -e
-          if [ "$APPARATUS" = "pytest" ] && [ "$rc" -eq 5 ]; then
-            echo "NO_TESTS_COLLECTED: pytest no recogió ningún test — failing closed."
-            exit 1
-          fi
           echo "APPARATUS_RC=$rc"
-          exit "$rc"
+          if [ "$rc" -ne 0 ]; then
+            exit "$rc"
+          fi
+          if [ "$APPARATUS" != "npm test" ]; then
+            echo "EJECUCION_NA: aparato declarado sin formato de conteo conocido; el rc es la medida."
+            exit 0
+          fi
+          set +e
+          python3 - "$log" <<'PY'
+          import re, sys
+
+          txt = open(sys.argv[1], encoding='utf-8', errors='replace').read()
+
+          # Contadores POSITIVOS por familia de runner. Cada patrón captura un entero.
+          positivos = [
+              r'^\s*(?:ℹ\s*|#\s*)?pass\s+(\d+)\s*$',   # node --test (spec «ℹ pass N» y tap «# pass N»)
+              r'^\s*#\s*(\d+)\s+tests?\s+passed',     # node --test variantes
+              r'^\s*Tests?:\s*(\d+)\s+passed',        # jest
+              r'^\s*Tests\s+(\d+)\s+passed',          # vitest
+              r'^\s*(\d+)\s+passing',                 # mocha
+              r'^\s*(\d+)\s+tests?\s+passed',         # genérico / bun
+              r'^\s*ok\s+\d+',                        # TAP: una línea ok = un test
+          ]
+          # Contadores NEGATIVOS explícitos: si el runner DICE cero, es rojo aunque
+          # otra línea parezca positiva.
+          negativos = [
+              r'^\s*(?:ℹ\s*|#\s*)?pass\s+0\s*$',
+              r'^\s*Tests?:\s*0\s+passed',
+              r'^\s*Tests\s+0\s+passed',
+              r'^\s*0\s+passing',
+              r'^\s*0\s+tests?\s+passed',
+          ]
+
+          cuenta = 0
+          for p in positivos:
+              if p == r'^ok\s+\d+':
+                  cuenta = max(cuenta, len(re.findall(p, txt, re.M)))
+              else:
+                  for m in re.findall(p, txt, re.M):
+                      try:
+                          cuenta = max(cuenta, int(m))
+                      except ValueError:
+                          pass
+
+          cero_explicito = any(re.search(p, txt, re.M) for p in negativos)
+
+          if cero_explicito:
+              print("VACUIDAD_EJECUCION: el runner declaró 0 tests ejecutados — failing closed.")
+              sys.exit(1)
+          if cuenta < 1:
+              print("VACUIDAD_EJECUCION: la salida no reporta ningún test ejecutado "
+                    "(se buscaron formatos de node --test, jest, vitest, mocha, bun y TAP) — failing closed.")
+              sys.exit(1)
+          print(f"EJECUCION_OK: {cuenta} test(s) reportados por el runner.")
+          PY
+          rc2=$?
+          set -e
+          if [ "$rc2" -ne 0 ]; then
+            echo "EJECUCION_RC=$rc2"
+            exit "$rc2"
+          fi
