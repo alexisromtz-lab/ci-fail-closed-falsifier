@@ -1,1 +1,1 @@
-bash tests/must_fail.sh
+node .github/verify_index.mjs
