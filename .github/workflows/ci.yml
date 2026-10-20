@@ -1,17 +1,22 @@
 # HUELLA-CI-TEMPLATE-20261020
+# HUELLA-CI-TEMPLATE-FIX-20261020
 #
-# Plantilla de CI fail-closed para los repositorios sin medición.
+# Plantilla de CI fail-closed para los repositorios que hoy no miden nada.
 #
-# INERTE EN ESTE REPO POR DISEÑO. El job solo corre donde el repo se adopta
-# declarando el marcador `.github/ci-fail-closed`. Sin marcador el job aparece
-# como *skipped* — que es "no medí", no un verde.
+# INERTE EN SU REPO DE ORIGEN POR DISEÑO: el job se declara *skipped* aquí
+# (skipped = «no medí», nunca un verde) y solo mide donde se adopta.
 #
-# ADOPTAR (dos piezas, ambas necesarias):
-#   1. copiar este archivo a <repo>/.github/workflows/ci.yml
-#   2. crear <repo>/.github/ci-fail-closed
+# ADOPTAR: copiar este archivo a <repo>/.github/workflows/ci.yml . Una pieza.
 #
-# El criterio no se mueve: sin tests ⇒ rojo. El código de salida de las
-# acciones se toma de los SHAs, no de tags móviles.
+# FALSIFICADOR (medido, no supuesto) en alexisromtz-lab/ci-fail-closed-falsifier:
+#   árbol sin tests      -> rojo   NO_TESTS_FOUND
+#   tests que pasan      -> verde
+#   tests que fallan     -> rojo   (prueba que pytest corre de verdad)
+#
+# CORRECCIÓN DE LA PRIMERA VERSIÓN: el guard era `if: hashFiles(...)` a nivel de
+# job; GitHub rechazó el workflow entero (0 jobs, «workflow file issue»).
+# `hashFiles` no existe en el contexto del `if` de job — disponibles: github,
+# needs, vars, inputs. Se corrigió a `github.repository`, que sí está.
 
 name: ci-fail-closed
 
@@ -28,7 +33,7 @@ concurrency:
 
 jobs:
   tests:
-    if: hashFiles('.github/ci-fail-closed') != ''
+    if: github.repository != 'alexisromtz-lab/platino-labs'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
