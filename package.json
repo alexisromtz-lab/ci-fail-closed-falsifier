@@ -1,0 +1,6 @@
+{
+  "name": "falsifier-node-con-test",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": { "test": "node --test test/ok.test.mjs" }
+}
