@@ -1,1 +1,2 @@
-bash tests/must_fail.sh
+comando: python .github/verify_manifest.py
+mide: manifiesto
