@@ -1,1 +1,4 @@
-bash tests/must_fail.sh
+# HUELLA-CI-NODE-V4-CONTROL-20261020
+comando: node ver.mjs
+mide: manifiesto
+evidencia: INDICE_SANO: [0-9]+
