@@ -1,0 +1,6 @@
+{
+  "name": "falsifier-node-sin-aparato",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Falsificador: package.json SIN script test -> el CI Node debe fallar cerrado."
+}
