@@ -1,1 +1,2 @@
-bash tests/must_fail.sh
+comando: python -m pytest -q
+mide: tests
