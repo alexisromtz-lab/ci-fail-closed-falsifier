@@ -1,0 +1,4 @@
+# CONTROL CI NODE v5
+comando: node --test --test-reporter=junit --test-reporter-destination=/tmp/junit.xml a.test.js
+mide: tests
+evidencia: junitxml
