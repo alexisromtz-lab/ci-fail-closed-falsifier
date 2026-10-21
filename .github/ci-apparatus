@@ -1,0 +1,3 @@
+# CONTROL CI NODE v5
+comando: node --test
+mide: tests
