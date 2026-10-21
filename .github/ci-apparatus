@@ -1,0 +1,4 @@
+# CONTROL CI NODE v5
+comando: bash tools/roto.sh
+mide: tests
+evidencia: junitxml
