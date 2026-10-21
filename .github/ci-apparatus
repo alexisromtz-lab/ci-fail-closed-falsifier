@@ -1,0 +1,4 @@
+# CONTROL CI NODE v5
+comando: bash tools/banco0.sh
+mide: banco
+evidencia: BANCO_SANO
