@@ -23,10 +23,10 @@ corrida que **completó**; las corridas `cancelled` son supersedidas por `concur
 
 ## El control que no vive aquí
 
-Que el template **no se mida a sí mismo** en su repo de origen se mide en
-`alexisromtz-lab/platino-labs`: ahí el job aparece **skipped**, nunca verde. `skipped`
-es la única representación honesta de «no medí»; un verde sin medición sería la
-tautología F-D1 con check verde.
+Que el template **no se mida a sí mismo** se mide en su árbol de origen, que no
+es público: ahí el job aparece **skipped**, nunca verde. `skipped` es la única
+representación honesta de «no medí»; un verde sin medición sería la tautología
+F-D1 con check verde.
 
 ## Nota histórica
 
